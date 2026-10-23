@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id          String   @id @default(uuid())
+  phoneNumber String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  loans       Loan[]
+  otps        OTPChallenge[]
+}
+
+model Loan {
+  id           String   @id @default(uuid())
+  userId       String
+  friendName   String
+  amount       Decimal
+  dueDate      DateTime
+  status       String   @default("UNPAID")
+  notes        String?
+  receiptPath  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  repaidAt     DateTime?
+
+  user         User     @relation(fields: [userId], references: [id])
+}
+
+
+
+model OTPChallenge {
+  id          String   @id @default(uuid())
+  phoneNumber String
+  otpHash     String
+  expiresAt   DateTime
+  attempts    Int      @default(0)
+  consumedAt  DateTime?
+  createdAt   DateTime @default(now())
+  userId      String   // foreign key to User
+
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@index([phoneNumber])
+}
